@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	
+	<!-- 配置目标类================ -->
+	<bean id="orderDao" class="proxyFactoryBean.OrderDaoImpl">
+	
+	</bean>
+	
+	<!-- 配置切面类================ -->
+	<bean id="myAspect" class="proxyFactoryBean.MyAspect">
+	
+	</bean>
+	
+	<!-- 使用Spring代理工厂定义一个名称为OrderDaoProxy -->
+	<bean id="orderDaoProxy" class="org.springframework.aop.framework.ProxyFactoryBean">
+		<!-- 1.指定代理实现的接口 -->
+		<property name="proxyInterfaces" value="proxyFactoryBean.OrderDao"/>
+		<!-- 2.指定目标对象 -->
+		<property name="target" ref="orderDao"/>
+		<!-- 3.指定切面，植入通知 -->
+		<property name="interceptorNames" value="myAspect"/>
+		<!-- 4.指定代理方式，true：使用cglib，false(默认):使用jdk动态代理 -->
+		<property name="proxyTargetClass" value="true"/>
+	
+	</bean>
+</beans> 

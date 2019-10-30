@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	
+	<!-- 配置目标类================ -->
+	<bean id="orderDao" class="springAopXml.OrderDaoImpl">
+
+	</bean>
+
+	<!-- 配置切面类 -->
+	<bean id="myAspectXml" class="springAopXml.MyAspectXml"></bean>
+	
+	<!-- 进行 aop 的配置 -->
+	<aop:config>
+		<!-- 配置切入点表达式:哪些类的哪些方法需要进行增强 -->
+		<aop:pointcut
+			expression="execution(* springAopXml.OrderDao.save(..))" id="pointcut1" />
+			
+		<aop:pointcut
+			expression="execution(* springAopXml.OrderDao.find(..))" id="pointcut2" />
+			
+		<!-- 配置切面 -->
+		<aop:aspect ref="myAspectXml">
+			<!-- 前置通知 -->
+			<aop:before method="before" pointcut-ref="pointcut1" />
+			<!-- 后置通知 -->
+			<aop:after method="after"  pointcut-ref="pointcut1" />
+			<!-- 环绕通知 -->
+			<aop:around method="around" pointcut-ref="pointcut1" />
+			<!-- 异常拦截通知 -->
+			<aop:after-throwing method="afterException" pointcut-ref="pointcut2"/>
+		</aop:aspect>
+		
+	</aop:config>
+
+
+</beans> 
