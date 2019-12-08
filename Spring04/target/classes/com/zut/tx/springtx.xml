@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.3.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+	<!--  -->
+	<context:property-placeholder location="classpath:/com/zut/tx/db.properties"/>
+	<context:component-scan base-package="com.zut.tx"></context:component-scan>
+	
+	<!-- 数据源 -->
+	<bean id="datasource"
+		class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName"
+			value="${driverClassName}" />
+		<property name="url"
+			value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	<!-- 声明jdbcTemplate模板 -->
+	<bean class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="datasource"></property>
+	</bean>
+	
+	
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="datasource"></property>
+	</bean>
+	
+	<!-- 声明事务通知(切面) -->
+	<tx:advice transaction-manager="transactionManager" id="txadvice">
+		<tx:attributes>
+			<!-- 设置事务应用到哪些方法上以及设置隔离级别、传播行为以及。。。。。 -->
+			<tx:method name="transfer" 
+				isolation="DEFAULT" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<!-- 配置aop代理 -->
+	<aop:config>
+		<aop:advisor advice-ref="txadvice" 
+			pointcut="execution(* com.zut.tx.*.*(..))"/>
+	</aop:config>
+	
+	
+</beans>

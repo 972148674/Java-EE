@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置映射     namespace  命名空间可自定义-->
+<mapper namespace="com.zut.mybatis.mapper.UserMapper">
+	
+	
+	<select id="findUserById" parameterType="int" 
+		resultType="com.zut.mybatis.pojo.User">
+		select * from user where id=#{id}
+	</select>
+	
+	
+	<insert id="insertUser" parameterType="user">
+		insert into user (username,birthday,sex,address)values(#{username},#{birthday},#{sex},#{address})
+	</insert>
+	
+	<update id="updateUserById" parameterType="user" >
+		update user set username=#{username} where id=#{id}
+	</update>
+	
+	<delete id="deleteUser"  parameterType="int">
+		delete from user where id =#{id}
+	</delete>
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+</mapper>
