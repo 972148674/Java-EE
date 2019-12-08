@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ <!-- 映射配置    namespace ：命名空间-->
+<mapper namespace="com.zut.mapper.OrdersMapper">
+	
+	<!-- 一对一根据订单编号查询用户信息 -->
+	<!-- 使用嵌套查询实现根据订单编号查询用户信息 -->
+	<select id="findOrderUserByNumber"
+			 parameterType="string" resultMap="orderUser">
+		SELECT u.*,o.id oid,o.number,o.note FROM user u ,orders o WHERE u.id=o.user_id AND o.number=#{number}
+	</select>
+	<!-- 编写结果映射集 -->	
+	<resultMap type="orders" id="orderUser">
+		<id column="oid" property="id"/>
+		<result property="number" column="number"/>
+		<result column="note" property="note"/>
+		<!-- 一对一 -->
+		<association property="user2" javaType="com.zut.pojo.User2">
+			<id column="id" property="id"/>
+			<result column="username" property="username"/>
+			<result column="address" property="address"/>
+		</association>
+	</resultMap>
+	
+	<!-- 使用嵌套结果实现根据订单编号查询用户信息 -->
+	<select id="ordersUserQTQ" 
+		parameterType="string" resultMap="ordersUserQt">
+		select * from orders where number=#{number}
+	</select>
+	
+	<!-- 编写结果映射集 -->
+	<resultMap type="orders" id="ordersUserQt">
+		<id column="id" property="id"/>
+		<result property="number" column="number"/>
+		<result column="note" property="note"/>
+		<result column="user_id" property="user_id"/>
+		<!-- 一对一嵌套查询 select:执行另外sql的地址，如果两个sql在同一个mapper中，只写sql的id，如果不在写namespace+id-->
+		<association property="user2" 
+			javaType="User2" column="user_id" select="com.zut.mapper.UserMapper.findUserById"/>
+			
+	</resultMap>
+	
+	
+	<!-- 根据用户名查询用户的订单信息 -->
+	<select id="findOrderUserByName" parameterType="String" resultMap="UserWithOrders">
+		SELECT u.*,o.id oid,o.number,o.note from user u, orders o where u.id=o.user_id and u.username=#{username}
+	</select>
+	<!-- 编写结果映射集 -->	
+	<resultMap type="User2" id="UserWithOrders">
+		<id column="id" property="id"/>
+		<result property="username" column="username"/>
+		<result column="birthday" property="birthday"/>
+		<result column="sex" property="sex"/>
+		<result column="address" property="address"/>
+		<!-- 一对多 -->
+		<collection property="ordersList" ofType="com.zut.pojo.Orders">
+			<id column="oid" property="id"/>
+			<result column="number" property="number"/>
+			<result column="note" property="note"/>
+		</collection>
+	 </resultMap>
+	
+
+	<!-- 根据用户名查询用户所购买的全部商品 -->
+	<select id="findOrderUserOrderDetailByName" 
+		parameterType="string" resultMap="userorderodItems">
+		SELECT u.*,o.id oid,o.number,od.id odid,od.items_id,od.items_num,it.name,it.price
+		FROM user u,orders o,orderdetail od,items it where u.id=o.user_id AND o.id = od.orders_id AND od.items_id=it.id and u.username like "%"#{username}"%"
+	</select>
+	<!-- 嵌套结果 -->
+	<resultMap type="User2" id="userorderodItems">
+		<id column="id" property="id"/>
+		<result column="username" property="username"/>
+		<!-- 一对多查询封装用户对应的订单 -->
+		<collection property="ordersList" ofType="orders">
+			<id column="oid" property="id"/>
+			<result column="number" property="number"/>
+			<!-- 封装订单对应的订单明细 -->
+			<collection property="orderDetails" ofType="orderDetail">
+				<id column="odid" property="id"/>
+				<result column="items_id" property="items_id"/>
+				<result column="items_num" property="items_num"/>
+				<!-- 一对一封装商品信息 -->
+				<association property="items" javaType="items">
+					<id column="items_id" property="id"/>
+					<result column="name" property="name"/>
+					<result column="price" property="price"/>
+				</association>
+			</collection>
+		</collection>
+	</resultMap>
+	
+		
+</mapper>

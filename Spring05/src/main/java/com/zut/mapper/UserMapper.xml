@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 配置映射     namespace  命名空间可自定义-->
+<mapper namespace="com.zut.mapper.UserMapper">
+	<!-- 查询   parameterType 输入参数    resultType：输出参数（结果集）#{id}占位符 -->
+	<select id="findUserById" parameterType="int" 
+		resultType="com.zut.pojo.User">
+		select * from user where id=#{id}
+	</select>
+	
+	<select id="findUserAll" resultType="user">
+		select * from user
+	</select>
+	
+	<!-- 批量查询 
+		for(Integer i : list)
+	-->
+	<select id="findUserByBatch" resultType="com.zut.pojo.User" parameterType="list">
+		select * from user where id in
+		<!-- collection遍历的对象。如果直接传集合或数组写list或array -->
+		<foreach collection="list" open="(" close=")" 
+									separator="," item="i">
+			#{i}
+		</foreach>
+	</select>
+	
+	
+	<!-- 模糊查询 -->
+	<select id="findUserByName" parameterType="String" resultType="com.zut.pojo.User">
+		select * from user where username like '%${value}%'
+	</select>
+	
+	<!-- 选择性的修改用户信息 动态sql拼接 -->
+	<update id="updateUser" parameterType="com.zut.pojo.User">
+		update user
+		<set>
+			<if test="username !=null and username !=''">
+				username=#{username},
+			</if>
+			
+			<if test="birthday !=null and birthday !=''">
+				birthday=#{birthday},
+			</if>
+			
+			<if test="sex !=null and sex !=''">
+				sex=#{sex},
+			</if>
+			
+			<if test="address !=null and address !=''">
+				address=#{address},
+			</if>
+		</set>
+		where id=#{id}
+	</update>
+	
+	
+	<!-- 动态添加用户 -->
+	<insert id="insertUser" parameterType="com.zut.pojo.User" >
+		insert into user
+		<!-- trim拼接sql  prefix前缀   suffix后缀   suffixOverrides后缀忽略-->
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="null !=id and ''!=id">
+				id,
+			</if>
+			<if test="null != username and ''!= username">
+				username,
+			</if>
+			<if test="null != birthday">
+				birthday,
+			</if>
+			<if test="null!= sex and ''!=sex">
+				sex,
+			</if>
+			<if test="null!= address and ''!= address">
+				address
+			</if>
+		</trim>
+		<trim prefix="values(" suffix=")" suffixOverrides=",">
+			<if test="null !=id and ''!=id">
+				#{id},
+			</if>
+			<if test="null != username and ''!= username">
+				#{username},
+			</if>
+			<if test="null != birthday">
+				#{birthday},
+			</if>
+			<if test="null!= sex and ''!=sex">
+				#{sex},
+			</if>
+			<if test="null!= address and ''!= address">
+				#{address}
+			</if>
+		</trim>
+	</insert>
+	
+	
+	
+	
+	
+	
+	<!-- <select id="findUserBypo" resultType="user" parameterType="user">
+		select * from user where username like "%"#{username}"%" and sex=#{sex}
+	</select>
+	
+	定义sql片段 ，以便其他sql语句引用
+	<sql id="findUserFrag">
+		where标签会自动忽略第一个and
+		<where>
+			if标签用来判断入参参数
+			<if test="null !=id and ''!=id">
+				id=#{id}
+			</if>
+			<if test="null != username and ''!= username">
+				and username like "%"#{username}"%"
+			</if>
+			<if test="null != birthday">
+				and birthday =#{birthday}
+			</if>
+			<if test="null!= sex and ''!=sex">
+				and sex=#{sex}
+			</if>
+			<if test="null!= address and ''!= address">
+				and address=#{address}
+			</if>
+		</where>
+	</sql>
+	<sql id="findUserFrag1">
+		select * from user 
+	</sql>
+	
+	动态sql拼接
+	<select id="findUserByExample" resultType="user" parameterType="user">
+		根据id引用sql片段
+		<include refid="findUserFrag1"></include>
+		<include refid="findUserFrag"></include>
+	</select>
+	
+	
+	<insert id="insertUser" parameterType="user">
+		insert into user values(#{id},#{username},#{birthday},#{sex},#{address})
+	</insert>
+	<insert id="insertUserPart" parameterType="user">
+		insert into user(username,sex,address) values(#{username},#{sex},#{address})
+	</insert>
+	<insert id="insertUserPart1" parameterType="user">
+		insert into user(username,sex) values(#{username},#{sex})
+	</insert>
+	
+		
+	批量删除
+	<delete id="deleteUserBatch" parameterType="userExp">
+		delete from user where id in
+		collection遍历的对象，如果传递的是包装类，写属性名
+		<foreach collection="ids" open="(" close=")" 
+									separator="," item="i">
+			#{i}
+		</foreach>
+	</delete>
+	
+	
+	
+	<update id="updateUserById" parameterType="user" >
+		update user set username=#{username} where id=#{id}
+	</update>
+	
+	<select id="findUserMap" resultType="user" parameterType="map">
+		select * from user where username like "%"#{name}"%" and sex=#{sex}
+	</select>
+	
+	<select id="findUserBySex" resultType="user" parameterType="userExp">
+		select * from user where sex=#{user.sex}
+	</select>
+	
+	<select id="findUserCount" resultType="int">
+		select count(*) from user
+	</select>
+	
+	定义结果映射集
+	
+		[id]：定义resultMap的唯一标识
+		[type]：定义该resultMap最终映射的pojo对象
+		[id标签]：映射结果集的唯一标识列，如果是多个字段联合唯一，则定义多个id标签
+		[result标签]：映射结果集的普通列
+		[column]：SQL查询的列名，如果列有别名，则该处填写别名
+		[property]：pojo对象的属性名
+	
+	<resultMap type="com.zut.pojo.User2" id="userMap">
+		<id column="id" property="u_id"/>
+		<result column="username" property="u_username"/>
+		<result column="birthday" property="u_birthday"/>
+		<result column="sex" property="u_sex"/>
+		<result column="address" property="u_address"/>
+	</resultMap>
+	
+	<select id="findUserByReM" resultMap="userMap">
+		select * from user
+	</select> -->
+	
+	
+	
+</mapper>
